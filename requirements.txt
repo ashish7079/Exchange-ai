@@ -3,41 +3,36 @@ langchain-core
 langchain-community
 
 # LLM Providers
-
 langchain-openai
 langchain-mistralai
 openai
 mistralai
 
 # Vector Database
-
 chromadb
 
 # Embedding Models
-
 sentence-transformers
 
 # Document Loaders dependencies
-
 pypdf
 unstructured
 beautifulsoup4
 lxml
 
 # Text Processing
-
 tiktoken
 
 # Environment Variables
-
 python-dotenv
 
 # Data Handling
-
 pandas
 numpy
 
-# API / App Layer (optional but commonly used)
-
+# API / App Layer
 fastapi
 uvicorn
+flask
+flask-cors
+gunicorn
