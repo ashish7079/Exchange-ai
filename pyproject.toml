@@ -1,0 +1,27 @@
+[project]
+name = "exchange"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "ashish7079", email = "ashishjha25032004@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "chromadb>=1.5.9",
+    "flask>=3.1.3",
+    "flask-cors>=6.0.5",
+    "langchain-chroma>=1.1.0",
+    "langchain-community>=0.4.2",
+    "langchain-mistralai>=1.1.6",
+    "langchain-text-splitters>=1.1.2",
+    "pypdf>=6.16.2",
+    "reportlab>=5.0.1",
+]
+
+[project.scripts]
+exchange = "exchange:main"
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"
