@@ -28,7 +28,7 @@ function Pdf_AnalyzerUi() {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        "http://localhost:8080/api/resume/analyze",
+        `${import.meta.env.VITE_API_URL}/api/resume/analyze`,
         {
           method: "POST",
 
