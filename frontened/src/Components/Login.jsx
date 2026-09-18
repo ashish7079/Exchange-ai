@@ -53,21 +53,21 @@ function Login() {
          API REQUEST
       ================================= */
 
-      const response = await fetch(
-        "http://localhost:8080/auth/login",
-        {
-          method: "POST",
+     const response = await fetch(
+  `${import.meta.env.VITE_API_URL}/auth/login`,
+  {
+    method: "POST",
 
-          headers: {
-            "Content-Type": "application/json"
-          },
+    headers: {
+      "Content-Type": "application/json"
+    },
 
-          body: JSON.stringify({
-            email: email.trim(),
-            password: password
-          })
-        }
-      );
+    body: JSON.stringify({
+      email: email.trim(),
+      password: password
+    })
+  }
+);
 
 
       /* ================================
