@@ -46,7 +46,7 @@ function InterviewUi() {
       );
 
       const response = await fetch(
-        "http://localhost:8080/api/interview/start",
+        `${import.meta.env.VITE_API_URL}/api/interview/start`,
         {
           method: "POST",
 
@@ -171,7 +171,7 @@ function InterviewUi() {
 
 
       const response = await fetch(
-        "http://localhost:8080/api/interview/answer",
+        `${import.meta.env.VITE_API_URL}/api/interview/answer`,
         {
           method: "POST",
 
