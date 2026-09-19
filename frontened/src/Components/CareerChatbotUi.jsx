@@ -156,8 +156,8 @@ function CareerChatbotUi() {
 
 
       const response = await fetch(
-        "http://localhost:5003/upload",
-        {
+    `${import.meta.env.VITE_API_URL}/api/chatbot/upload`,
+    {
           method: "POST",
 
           headers: {
@@ -335,9 +335,9 @@ function CareerChatbotUi() {
       // SEND TO PYTHON CHATBOT
       // =====================================================
 
-      const response = await fetch(
-        "http://localhost:5003/chat",
-        {
+     const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/chatbot/chat`,
+    {
           method: "POST",
 
           headers: {
