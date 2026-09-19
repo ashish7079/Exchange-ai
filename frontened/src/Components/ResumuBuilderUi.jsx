@@ -24,8 +24,8 @@ function ResumuBuilderUi() {
       formData.append("user_text", userText);
 
 
-      const response = await fetch(
-        "http://localhost:8080/api/resumeBuild/build-resume",
+    const response = await fetch(
+  `${import.meta.env.VITE_API_URL}/api/resumeBuild/build-resume`,
         {
           method: "POST",
 
