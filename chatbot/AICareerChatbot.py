@@ -29,6 +29,10 @@ load_dotenv()
 # --------------------------------
 
 app = Flask(__name__)
+
+# Maximum PDF upload size: 5 MB
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
+
 CORS(app)
 
 UPLOAD_DIR = os.path.join(
@@ -37,6 +41,7 @@ UPLOAD_DIR = os.path.join(
 )
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 
 # --------------------------------
 # Paths
@@ -76,22 +81,25 @@ embeddings = MistralAIEmbeddings(
 # Chroma Vector Database
 # --------------------------------
 
-vector_db = Chroma(
-    persist_directory=CHROMA_DIR,
-    collection_name="career_knowledge",
-    embedding_function=embeddings
-)
+# User-specific Chroma collections are created
+# separately when a PDF is uploaded.
+
+# vector_db = Chroma(
+#     persist_directory=CHROMA_DIR,
+#     collection_name="career_knowledge",
+#     embedding_function=embeddings
+# )
 
 
 # --------------------------------
 # Retriever
 # --------------------------------
 
-retriever = vector_db.as_retriever(
-    search_kwargs={
-        "k": 4
-    }
-)
+# retriever = vector_db.as_retriever(
+#     search_kwargs={
+#         "k": 4
+#     }
+# )
 
 
 # --------------------------------
@@ -152,6 +160,11 @@ User Question:
 """
 )
 
+
+# --------------------------------
+# PDF Upload Endpoint
+# --------------------------------
+
 @app.route("/upload", methods=["POST"])
 def upload_pdf():
 
@@ -192,6 +205,14 @@ def upload_pdf():
 
         documents = loader.load()
 
+        # Maximum 20 pages per PDF
+        if len(documents) > 20:
+            os.remove(pdf_path)
+
+            return jsonify({
+                "error": "Please upload a PDF with 20 pages or fewer."
+            }), 400
+
         # -----------------------------
         # Split into chunks
         # -----------------------------
@@ -201,9 +222,23 @@ def upload_pdf():
             chunk_overlap=200
         )
 
-        chunks = text_splitter.split_documents(
-            documents
-        )
+        chunks = text_splitter.split_documents(documents)
+
+        # Check whether the PDF contains readable text
+        if not chunks:
+            os.remove(pdf_path)
+
+            return jsonify({
+                "error": "No readable text found in this PDF."
+            }), 400
+
+        # Maximum 100 chunks per PDF
+        if len(chunks) > 100:
+            os.remove(pdf_path)
+
+            return jsonify({
+                "error": "PDF is too large. Please upload a shorter PDF."
+            }), 400
 
         # -----------------------------
         # Create embeddings
@@ -218,7 +253,9 @@ def upload_pdf():
         # User-specific Chroma DB
         # -----------------------------
 
-        collection_name = "user_" + session_id.replace("-", "_")
+        collection_name = (
+            "user_" + session_id.replace("-", "_")
+        )
 
         vector_db = Chroma.from_documents(
             documents=chunks,
@@ -228,15 +265,10 @@ def upload_pdf():
         )
 
         return jsonify({
-
             "message": "PDF uploaded successfully",
-
             "session_id": session_id,
-
             "pages": len(documents),
-
             "chunks": len(chunks)
-
         })
 
     except Exception as e:
@@ -246,6 +278,7 @@ def upload_pdf():
         return jsonify({
             "error": str(e)
         }), 500
+
 
 # --------------------------------
 # Chat Endpoint
@@ -299,11 +332,7 @@ def chat():
             # Check stored chunks
             # -----------------------------------------
 
-            collection_data = user_vector_db.get()
-
-            total_chunks = len(
-                collection_data["ids"]
-            )
+            total_chunks = user_vector_db._collection.count()
 
             print("TOTAL CHUNKS IN PDF DB:", total_chunks)
 
@@ -360,17 +389,11 @@ def chat():
                 print("FINAL MODE: USER_PDF_RAG")
 
                 return jsonify({
-
                     "answer": answer,
-
                     "mode": "USER_PDF_RAG",
-
                     "session_id": session_id,
-
                     "retrieved_chunks": len(documents)
-
                 })
-
 
         # =========================================
         # CASE 2: NORMAL CHAT
@@ -389,13 +412,9 @@ def chat():
         })
 
         return jsonify({
-
             "answer": answer,
-
             "mode": "NORMAL"
-
         })
-
 
     except Exception as e:
 
@@ -404,10 +423,20 @@ def chat():
         print("================================\n")
 
         return jsonify({
-
             "error": str(e)
-
         }), 500
+
+
+# --------------------------------
+# Handle oversized PDF
+# --------------------------------
+
+@app.errorhandler(413)
+def request_entity_too_large(error):
+
+    return jsonify({
+        "error": "PDF size must be 5 MB or less."
+    }), 413
 
 
 # --------------------------------
