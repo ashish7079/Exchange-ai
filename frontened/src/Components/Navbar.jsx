@@ -17,19 +17,13 @@ function Navbar() {
      LOGOUT
   ========================================= */
 
-  const logout = () => {
 
-    // Remove JWT
-    localStorage.removeItem("token");
+const logout = () => {
+  localStorage.removeItem("token");
+  setMenuOpen(false);
+  navigate("/login", { replace: true });
+};
 
-    // Close mobile menu
-    setMenuOpen(false);
-
-    // Completely reload application
-    // This prevents old authentication state
-    window.location.replace("/login");
-
-  };
 
 
   /* =========================================
